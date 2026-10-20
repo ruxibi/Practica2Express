@@ -9,9 +9,11 @@ function validarCorreo(correo) {
     return regexCorreo.test(correo);
 }
 
-function validarBoleta(){
-//tarea
+function validarBoleta(boleta) {
+    const regex = /^\d{10}$/;
+    return regex.test(boleta);
 }
+
 
 function validarContrasena(){
     if (typeof contrasena !== 'string') return false;
