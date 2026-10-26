@@ -1,19 +1,47 @@
 const pool = require('../bd-local');
 
-const COLUMNAS_PUBLICAS = 'id, id_taller, id_alumno, boleta, nombre_alumnoa';
+const COLUMNAS_PUBLICAS = 'id, taller_id , boleta, nombre_alumno';
 
 //registrar asistencia
-async function registrarAsistencia({id_taller, id_alumno, boleta, nombre_alumnoa}) {
-    const [info] = await pool.query(
-        `INSERT INTO asistencia (id_taller, id_alumno, boleta, nombre_alumnoa) VALUES (?, ?, ?, ?)`, [id_taller, id_alumno, boleta, nombre_alumnoa]
-    );
-    return info.insertId;
-}       
+const { randomUUID } = require('crypto');
 
+async function registrarAsistencia(datos) {
+
+    const id = randomUUID();
+
+    await pool.query(
+        `INSERT INTO asistencias
+        (id, taller_id, nombre_alumno, boleta)
+        VALUES (?, ?, ?, ?)`,
+        [
+            id,
+            datos.taller_id,
+            datos.nombre_alumno,
+            datos.boleta
+        ]
+    );
+
+    const [filas] = await pool.query(
+        `SELECT id,
+                taller_id,
+                nombre_alumno,
+                boleta,
+                fecha_registro
+         FROM asistencias
+         WHERE id = ?`,
+        [id]
+    );
+
+    return filas[0];
+}
+
+module.exports = {
+    registrarAsistencia
+};
 //consultar asistencia de un taller
-async function consultarAsistenciaPorTaller(id_taller) {
+async function consultarAsistenciaPorTaller(taller_id) {
     const [filas] = await pool.query(`
-        SELECT ${COLUMNAS_PUBLICAS} FROM asistencia WHERE id_taller = ?`, [id_taller]);
+        SELECT ${COLUMNAS_PUBLICAS} FROM asistencias WHERE taller_id = ?`, [taller_id]);
         return filas;
 }   
 

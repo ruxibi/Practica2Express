@@ -2,28 +2,34 @@ const asistenciaModel = require('../Modelo/asistencia_modelo');
 
 async function registrarAsistencia(req, res) {
     try {
-        const { id_taller, id_alumno, boleta, nombre_alumno } = req.body;
+        const { taller_id, boleta, nombre_alumno } = req.body;
 
-        if (!id_taller || !id_alumno || !boleta || !nombre_alumno) {
-            return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+        if (!taller_id || !boleta || !nombre_alumno) {
+            return res.status(400).json({
+                error: 'Todos los campos son obligatorios'
+            });
         }
 
-        const datosAsistencia = { id_taller, id_alumno, boleta, nombre_alumno };
-        const insertId = await asistenciaModel.registrarAsistencia(datosAsistencia);
-        
-        res.status(201).json({ 
-            mensaje: 'Asistencia registrada correctamente', 
-            id: insertId 
-        });
+        const asistencia =
+            await asistenciaModel.registrarAsistencia({
+                taller_id,
+                boleta,
+                nombre_alumno
+            });
+
+        res.status(201).json(asistencia);
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            error: error.message
+        });
     }
 }
 
-async function consultarAlassistenciaPorTaller(req, res) {
+async function consultarAsistenciaPorTaller(req, res) {
     try {
-        const { id_taller } = req.params;
-        const filas = await asistenciaModel.consultarAsistenciaPorTaller(id_taller);
+        const { tallerId} = req.params;
+        const filas = await asistenciaModel.consultarAsistenciaPorTaller(tallerId);
         
         res.json(filas);
     } catch (error) {

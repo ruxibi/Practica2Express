@@ -28,6 +28,67 @@ async function obtenerUsuario(req, res) {
     }
     
 }
+async function crearUsuario(req, res) {
+    try {
+        const { nombre, correo, contrasena, boleta } = req.body;
+
+        if (!nombre || !correo || !contrasena || !boleta) {
+            return res.status(400).json({ error: 'nombre, correo, contrasena y boleta son obligatorios' });
+        }
+        if (!validarCorreo(correo)) {
+            return res.status(400).json({ error: 'El correo no tiene un formato válido' });
+        }
+        if (!validarBoleta(boleta)) {
+            return res.status(400).json({ error: 'La boleta debe tener 10 dígitos' });
+        }
+        if (!validarContrasena(contrasena)) {
+            return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
+        }
+
+        const contrasenaHash = await bcrypt.hash(contrasena, 10);
+        const usuario = await usuariosModel.crear({ nombre, correo, contrasenaHash, boleta: String(boleta) });
+        res.status(201).json(usuario);
+    } catch (error) {
+        if (esDuplicado(error)) {
+            return res.status(409).json({ error: 'Ya existe un usuario con ese correo o boleta' });
+        }
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function actualizarUsuario(req, res) {
+    try {
+        const { nombre, correo, rol } = req.body || {};
+
+        if (nombre === undefined && correo === undefined && rol === undefined) {
+            return res.status(400).json({ error: 'Envía al menos uno de: nombre, correo, rol' });
+        }
+        if (correo !== undefined && !validarCorreo(correo)) {
+            return res.status(400).json({ error: 'El correo no tiene un formato válido' });
+        }
+
+        const usuario = await usuarioModel.actualizar(req.params.id, { nombre, correo, rol });
+        if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
+        res.json(usuario);
+    } catch (error) {
+        if (esDuplicado(error)) {
+            return res.status(409).json({ error: 'Ya existe un usuario con ese correo' });
+        }
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function eliminarUsuario(req, res) {
+    try {
+        const eliminado = await usuarioModel.eliminar(req.params.id);
+        if (!eliminado) return res.status(404).json({ error: 'Usuario no encontrado' });
+        res.status(204).send();
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+module.exports = { listarUsuarios, obtenerUsuario, crearUsuario, actualizarUsuario, eliminarUsuario };
 
 
-//deberan de realizar los controladores de asistencia y talleres con sus funciones correspondientes
+

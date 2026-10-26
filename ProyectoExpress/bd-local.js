@@ -1,15 +1,12 @@
 const mysql = require('mysql2/promise');
 
-/**
- * La base de datos local la usaremos para verificar pruebas internas, se buscara que deben de crear cada uno una cuenta en supabase.com y generaremos una api para conectarnos a un servicio en bd en la nube, para ello debemos configurar el archivo .env
- */
-
 const pool = mysql.createPool({
-    host:'localhost',
-    port:3306,
-    user:'root',
-    password:'n0m3l0',
-    datase: 'cecyt9_local',
-    dateStrings: true,
-
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    password: 'P3tun1a',
+    database: 'cecyt9_local',
+    dateStrings: true
 });
+
+module.exports = pool;
