@@ -7,6 +7,31 @@ const BACKEND_CAIDO = 'El backend no responde: arráncalo con npm start en backe
 // pedirJSON('/talleres') debe hacer fetch a `${API_URL}/api/talleres`, regresar el JSON de la respuesta
 // y, si algo sale mal, lanzar un Error con un mensaje que se pueda mostrar en pantalla.
 export async function pedirJSON(ruta, opciones = {}) {
-  // TODO paso 1
-  throw new Error('pedirJSON todavía no está escrita (paso 1 de la guía).');
+  let res;
+  try {
+    res = await fetch(`${API_URL}/api${ruta}`, {
+      ...opciones,
+      headers: { 'Content-Type': 'application/json', ...opciones.headers },
+    });
+  } catch {
+    // Sin proxy (NEXT_PUBLIC_API_URL) y con el 
+    // backend apagado, fetch falla antes de recibir respuesta.//
+    throw new Error(BACKEND_CAIDO);
+  }
+
+  
+  // Un 204 no trae cuerpo, y con el backend apagado a
+  // l proxy de Next responde 500 en texto, no en JSON.//
+  let datos = null;
+  try {
+    datos = await res.json();
+  } catch {
+    datos = null;
+  }
+
+  if (!res.ok) {
+    if (datos && datos.error) throw new Error(datos.error);
+    throw new Error(res.status === 500 ? BACKEND_CAIDO : `El backend respondió ${res.status}`);
+  }
+  return datos;
 }

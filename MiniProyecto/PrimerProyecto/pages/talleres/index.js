@@ -12,14 +12,34 @@ export default function Talleres() {
 
   // TODO paso 2: useEffect que llame a cargarTalleres() una sola vez, al abrir la página.
 
+  useEffect(() => {
+    cargarTalleres();
+  }, []);
+
   async function cargarTalleres() {
-    // TODO paso 2: pide '/talleres' con pedirJSON y guarda el resultado en el estado.
+    try {
+      setTalleres(await pedirJSON('/talleres'));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCargando(false);
+    }
   }
 
   return (
     <main>
       <h1>Talleres</h1>
-      {/* TODO paso 2: mensaje de "Cargando…", mensaje de error y la lista de talleres. */}
+      { cargando && <p>Cargando talleres…</p>}
+      {error && <p className="error">{error}</p>}
+
+      <ul>
+        {talleres.map((t) => (
+          <li key={t.id}>
+            {t.nombre} — {t.fecha} — cupo {t.cupo}
+          </li>
+        ))}
+      </ul>
+
     </main>
   );
 }
