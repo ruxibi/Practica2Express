@@ -4,10 +4,25 @@ import estilos from './TarjetaTaller.module.css';
 
 // PASO 3: tarjeta de un taller. Recibe el objeto tal como lo manda GET /api/talleres.
 export default function TarjetaTaller({ taller }) {
-  // TODO paso 3: etiqueta Próximo / Ya pasó, nombre, instructor, fecha, cupo y enlace al detalle.
+  const pasado = yaPaso(taller.fecha);
+
   return (
     <article className={estilos.tarjeta}>
-      <h3>{taller.nombre}</h3>
+      <span className={pasado ? estilos.etiquetaPasado : estilos.etiqueta}>{pasado ? 'Ya pasó' : 'Próximo'}</span>
+      <h3 className={estilos.titulo}>{taller.nombre}</h3>
+      <p className={estilos.dato}>
+        <strong>Instructor:</strong> {taller.instructor || 'Por confirmar'}
+      </p>
+      <p className={estilos.dato}>
+        <strong>Fecha:</strong> {formatearFecha(taller.fecha)}
+      </p>
+      <p className={estilos.dato}>
+        <strong>Cupo:</strong> {taller.cupo}
+      </p>
+      <Link className={estilos.enlace} href={`/talleres/${taller.id}`}>
+        Ver detalle e inscribirme →
+      </Link>
     </article>
   );
 }
+

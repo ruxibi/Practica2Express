@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { pedirJSON } from '../../lib/api';
 
+import TarjetaTaller from '../../components/TarjetaTaller';
+import estilos from '../../styles/Talleres.module.css';
+
+
 // /talleres — lista de talleres (GET /api/talleres).
 // PASO 2: lista sencilla con estados de carga y error.
 // PASO 3: cambia la lista por tarjetas (components/TarjetaTaller.js) en una rejilla.
@@ -16,6 +20,7 @@ export default function Talleres() {
     cargarTalleres();
   }, []);
 
+  
   async function cargarTalleres() {
     try {
       setTalleres(await pedirJSON('/talleres'));
@@ -32,13 +37,15 @@ export default function Talleres() {
       { cargando && <p>Cargando talleres…</p>}
       {error && <p className="error">{error}</p>}
 
-      <ul>
+      {!cargando && !error && talleres.length === 0 && (
+        <p>No hay talleres registrados.</p>
+      )}
+      <div className={estilos.rejilla}>
         {talleres.map((t) => (
-          <li key={t.id}>
-            {t.nombre} — {t.fecha} — cupo {t.cupo}
-          </li>
+          <TarjetaTaller key={t.id} taller={t} />
         ))}
-      </ul>
+      </div>
+
 
     </main>
   );
