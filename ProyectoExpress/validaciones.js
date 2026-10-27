@@ -15,9 +15,8 @@ function validarBoleta(boleta) {
 }
 
 
-function validarContrasena(){
+function validarContrasena(contrasena){
     if (typeof contrasena !== 'string') return false;
     return contrasena.length >= 8;
 }
-
 module.exports = {validarBoleta, validarContrasena, validarCorreo}
