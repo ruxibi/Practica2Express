@@ -20,7 +20,8 @@ async function listarUsuarios(req, res) {
 
 async function obtenerUsuario(req, res) {
     try{
-        const usuario = await usuariosModel.obtenerPorId(req.params.id);
+        const usuario = await
+         usuariosModel.obtenerPorId(req.params.id);
         if(!usuario) return res.status(404).json({error : 'Usuario no encontrado'});
         res.json(usuario);
     }catch(error){
@@ -67,7 +68,7 @@ async function actualizarUsuario(req, res) {
             return res.status(400).json({ error: 'El correo no tiene un formato válido' });
         }
 
-        const usuario = await usuarioModel.actualizar(req.params.id, { nombre, correo, rol });
+        const usuario = await usuariosModel.actualizar(req.params.id, { nombre, correo, rol });
         if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
         res.json(usuario);
     } catch (error) {
@@ -80,7 +81,7 @@ async function actualizarUsuario(req, res) {
 
 async function eliminarUsuario(req, res) {
     try {
-        const eliminado = await usuarioModel.eliminar(req.params.id);
+        const eliminado = await usuariosModel.eliminar(req.params.id);
         if (!eliminado) return res.status(404).json({ error: 'Usuario no encontrado' });
         res.status(204).send();
     } catch (error) {
