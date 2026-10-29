@@ -13,6 +13,9 @@ export default function Talleres() {
   const [talleres, setTalleres] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
+  const [busqueda, setBusqueda] = useState('');
+
+
 
   // TODO paso 2: useEffect que llame a cargarTalleres() una sola vez, al abrir la página.
 
@@ -20,7 +23,7 @@ export default function Talleres() {
     cargarTalleres();
   }, []);
 
-  
+
   async function cargarTalleres() {
     try {
       setTalleres(await pedirJSON('/talleres'));
@@ -31,22 +34,35 @@ export default function Talleres() {
     }
   }
 
+  // El filtro no vuelve a pedir datos al backend: trabaja sobre el arreglo que ya está en el estado.//
+  const texto = busqueda.trim().toLowerCase();
+  const visibles = talleres.filter((t) => `${t.nombre} ${t.instructor || ''}`.toLowerCase().includes(texto));
+
+
   return (
     <main>
       <h1>Talleres</h1>
-      { cargando && <p>Cargando talleres…</p>}
-      {error && <p className="error">{error}</p>}
 
-      {!cargando && !error && talleres.length === 0 && (
+      <input
+        type="text"
+        placeholder="Buscar por nombre o instructor"
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+        className={estilos.buscador}
+      />
+
+      {talleres.length === 0 ? (
         <p>No hay talleres registrados.</p>
+      ) : visibles.length === 0 ? (
+        <p>No hay talleres que coincidan con la búsqueda.</p>
+      ) : (
+        <div className={estilos.rejilla}>
+          {visibles.map((t) => (
+            <TarjetaTaller key={t.id} taller={t} />
+          ))}
+        </div>
       )}
-      <div className={estilos.rejilla}>
-        {talleres.map((t) => (
-          <TarjetaTaller key={t.id} taller={t} />
-        ))}
-      </div>
-
-
     </main>
   );
 }
+

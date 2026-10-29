@@ -12,7 +12,7 @@ import estilos from '../styles/Talleres.module.css';
 // Todavía no hay login (llega en la semana 10): por eso se busca por boleta.
 // PASO 6: GET /api/usuarios, GET /api/talleres y GET /api/talleres/:id/asistencias (uno por taller).
 export default function Perfil() {
-
+  const [boleta, setBoleta] = useState('');
   const [buscada, setBuscada] = useState('');
   const [alumno, setAlumno] = useState(null);
   const [nombreInscrito, setNombreInscrito] = useState('');
