@@ -55,7 +55,3 @@ async function buscarPorCorreoConHash(correo) {
 }
 
 module.exports = {listar, obtenerPorId, crear, actualizar, eliminar, buscarPorCorreoConHash}
-
-//deberan de crear los modelos de las tablas talleres y asistencia
-//taller tiene registraralumno al taller, consultar todos los talleres
-//asistencia tiene registrarasistencia consultar asistencia de taller

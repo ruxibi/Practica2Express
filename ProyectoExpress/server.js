@@ -41,7 +41,7 @@ app.get('/', (req, res) => {
     res.json({ mensaje: 'API de Registro de Asistencia - CECyT 9 funcionando correctamente' });
 });
 
-app.listen(4000, () =>{
-    console.log(`Servidor escuchando en el puerto: 4000`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor escuchando en la red en el puerto: ${PORT}`);
 });
 

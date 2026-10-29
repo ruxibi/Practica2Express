@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState} from 'react';
 import { pedirJSON } from '../lib/api';
 import { formatearFecha } from '../lib/formato';
 import { validarBoleta } from '../lib/validaciones';
@@ -58,7 +58,6 @@ export default function Perfil() {
 
   const nombre = alumno ? alumno.nombre : nombreInscrito;
 
-
   return (
     <main>
       <h1>Mi perfil</h1>
@@ -79,11 +78,16 @@ export default function Perfil() {
                 <p><strong>Rol:</strong> {alumno.rol}</p>
               </>
             ) : (
+              <>
               <p>
-                La boleta {buscada} no tiene cuenta registrada
-                {nombreInscrito ? ` (inscripciones a nombre de ${nombreInscrito})` : ''}. Aun así puedes
-                inscribirte en un taller.
+                  La boleta {buscada} no tiene cuenta registrada
+                  {nombreInscrito ? ` (inscripciones a nombre de ${nombreInscrito})` : ''}. Aun así puedes
+                  inscribirte en un taller. (Regístrate en el sistema para poder gestionar tus datos y talleres)
               </p>
+              <Link href="/registroUsuario" style={{color: '#6b1d3a', textDecoration: 'none' }}>
+                  Registrarte aquí
+              </Link>
+              </>
             )}
           </section>
 
@@ -116,4 +120,5 @@ export default function Perfil() {
       )}
     </main>
   );
+
 }

@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { pedirJSON } from '../../lib/api';
 import { formatearFecha, ocultarBoleta } from '../../lib/formato';
-import { validarBoleta } from '../../lib/validaciones';
+import { validarBoleta, validarNombre } from '../../lib/validaciones';
 import estilos from '../../styles/Talleres.module.css';
 
 // /talleres/[id] — detalle de un taller.
@@ -25,9 +25,6 @@ export default function DetalleTaller() {
   const [enviando, setEnviando] = useState(false);
 
 
-  // TODO paso 4.1: useEffect que espere a router.isReady y llame a cargar().
-
-  // TODO paso 4.1: useEffect que espere a router.isReady y llame a cargar().
   useEffect(() => {
     // En el primer render router.query todavía viene vacío: hay que esperar a router.isReady.
     if (!router.isReady) return;
@@ -57,28 +54,47 @@ export default function DetalleTaller() {
     setErrorForm('');
     setExito('');
 
-    // El backend de esta semana no revisa cupo ni inscripciones repetidas: lo cuida el front.//
     const nombreLimpio = nombre.trim();
     const boletaLimpia = boleta.trim();
-    if (!nombreLimpio) return setErrorForm('Escribe tu nombre.');
-    if (!validarBoleta(boletaLimpia)) return setErrorForm('La boleta debe tener 10 dígitos.');
-    if (asistencias.some((a) => a.boleta === boletaLimpia)) {
-      return setErrorForm('Esa boleta ya está inscrita en este taller.');
+
+    if (!validarNombre(nombreLimpio)) {
+      return setErrorForm('Ingresa un nombre válido (solo letras, mínimo 3 caracteres).');
     }
-    if (lleno) return setErrorForm('El taller ya no tiene lugares.');
+
+    if (!validarBoleta(boletaLimpia)) {
+      return setErrorForm('La boleta debe tener exactamente 10 dígitos.');
+    }
+
+    if (asistencias.some((a) => a.boleta === boletaLimpia)) {
+      return setErrorForm('Esta boleta ya se encuentra inscrita en este taller.');
+    }
+
+    if (lleno) {
+      return setErrorForm('El taller ya alcanzó su cupo máximo.');
+    }
+
+    if (new Date(taller.fecha) < new Date()) {
+      return setErrorForm('No es posible inscribirse a un taller que ya transcurrió.');
+    }
 
     setEnviando(true);
     try {
       await pedirJSON('/asistencias', {
         method: 'POST',
-        body: JSON.stringify({ taller_id: id, nombre_alumno: nombreLimpio, boleta: boletaLimpia }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          taller_id: id,
+          nombre_alumno: nombreLimpio,
+          boleta: boletaLimpia,
+        }),
       });
-      setExito(`¡Listo! ${nombreLimpio} quedó inscrito(a) en el taller.`);
+
+      setExito(`¡Inscripción exitosa! ${nombreLimpio} ha quedado registrado(a).`);
       setNombre('');
       setBoleta('');
-      await cargar();
+      await cargar(); // Recargar los datos del taller para actualizar el cupo y la lista de inscritos
     } catch (err) {
-      setErrorForm(err.message);
+      setErrorForm(err.message || 'Ocurrió un error al procesar la inscripción.');
     } finally {
       setEnviando(false);
     }
