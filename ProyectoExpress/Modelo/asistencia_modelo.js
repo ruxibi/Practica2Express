@@ -35,9 +35,6 @@ async function registrarAsistencia(datos) {
     return filas[0];
 }
 
-module.exports = {
-    registrarAsistencia
-};
 //consultar asistencia de un taller
 async function consultarAsistenciaPorTaller(taller_id) {
     const [filas] = await pool.query(`
@@ -45,5 +42,14 @@ async function consultarAsistenciaPorTaller(taller_id) {
         return filas;
 }   
 
-module.exports = {registrarAsistencia, consultarAsistenciaPorTaller}
+async function obtenerTodasLasAsistencias() {
+    const [filas] = await pool.query(`
+        SELECT a.*, t.nombre AS taller_nombre 
+        FROM asistencias a 
+        JOIN talleres t ON a.taller_id = t.id
+    `);
+    return filas;
+}
+
+module.exports = {registrarAsistencia, consultarAsistenciaPorTaller, obtenerTodasLasAsistencias}
 

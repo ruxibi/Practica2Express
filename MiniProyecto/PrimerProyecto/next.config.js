@@ -1,5 +1,5 @@
 const MINI_SERVIDOR_URL = 'http://localhost:3000';
-const BACKEND_URL = 'http://IP DE LA MAQUINA DEL BACK:4000';
+const BACKEND_URL = 'http://localhost:4000';
 
 /** @type{import('next').NextConfig} */
 

@@ -30,6 +30,7 @@ app.get('/api/talleres', tallerControlador.listarTalleres);
 app.get('/api/talleres/:id', tallerControlador.obtenerTaller);
 app.post('/api/talleres', tallerControlador.crearTaller);
 app.post('/api/asistencias', asistenciaControlador.registrarAsistencia);
+app.get('/api/asistencias', asistenciaControlador.listarTodasLasAsistencias);
 app.get('/api/talleres/:tallerId/asistencias',asistenciaControlador.consultarAsistenciaPorTaller);
 app.get('/api/usuarios', usuarioControlador.listarUsuarios);
 app.get('/api/usuarios/:id', usuarioControlador.obtenerUsuario);

@@ -6,16 +6,13 @@ import { formatearFecha, ocultarBoleta } from '../../lib/formato';
 import { validarBoleta, validarNombre } from '../../lib/validaciones';
 import estilos from '../../styles/Talleres.module.css';
 
-// /talleres/[id] — detalle de un taller.
-// PASO 4: datos del taller, barra de lugares y lista de inscritos
-//         (GET /api/talleres/:id y GET /api/talleres/:id/asistencias).
-// PASO 5: formulario de inscripción (POST /api/asistencias).
 export default function DetalleTaller() {
   const router = useRouter();
   const { id } = router.query;
 
   const [taller, setTaller] = useState(null);
   const [asistencias, setAsistencias] = useState([]);
+  const [usuarios, setUsuarios] = useState([]); 
   const [errorCarga, setErrorCarga] = useState('');
 
   const [nombre, setNombre] = useState('');
@@ -24,9 +21,7 @@ export default function DetalleTaller() {
   const [exito, setExito] = useState('');
   const [enviando, setEnviando] = useState(false);
 
-
   useEffect(() => {
-    // En el primer render router.query todavía viene vacío: hay que esperar a router.isReady.
     if (!router.isReady) return;
     if (router.query.boleta) setBoleta(String(router.query.boleta));
     if (router.query.nombre) setNombre(String(router.query.nombre));
@@ -38,13 +33,13 @@ export default function DetalleTaller() {
     try {
       setTaller(await pedirJSON(`/talleres/${id}`));
       setAsistencias(await pedirJSON(`/talleres/${id}/asistencias`));
+      setUsuarios(await pedirJSON('/usuarios')); 
       setErrorCarga('');
     } catch (error) {
       setErrorCarga(error.message);
     }
   }
 
-  // Lugares: se calculan con lo que ya está en el estado (cada vez que cambia, React vuelve a calcular).//
   const ocupados = asistencias.length;
   const libres = taller ? Math.max(0, taller.cupo - ocupados) : 0;
   const lleno = taller !== null && libres === 0;
@@ -65,6 +60,13 @@ export default function DetalleTaller() {
       return setErrorForm('La boleta debe tener exactamente 10 dígitos.');
     }
 
+    const usuarioEncontrado = usuarios.find((u) => u.boleta === boletaLimpia);
+    if (usuarioEncontrado) {
+      if (usuarioEncontrado.nombre.trim().toLowerCase() !== nombreLimpio.toLowerCase()) {
+        return setErrorForm('La boleta ingresada pertenece a un usuario registrado, pero el nombre no coincide.');
+      }
+    }
+
     if (asistencias.some((a) => a.boleta === boletaLimpia)) {
       return setErrorForm('Esta boleta ya se encuentra inscrita en este taller.');
     }
@@ -73,8 +75,11 @@ export default function DetalleTaller() {
       return setErrorForm('El taller ya alcanzó su cupo máximo.');
     }
 
-    if (new Date(taller.fecha) < new Date()) {
-      return setErrorForm('No es posible inscribirse a un taller que ya transcurrió.');
+    const hoyStr = new Date().toISOString().split('T')[0];
+    const fechaTallerStr = taller.fecha.split('T')[0];
+
+    if (fechaTallerStr < hoyStr) {
+      return setErrorForm('No es posible inscribirse a un taller de una fecha que ya pasó.');
     }
 
     setEnviando(true);
@@ -92,14 +97,13 @@ export default function DetalleTaller() {
       setExito(`¡Inscripción exitosa! ${nombreLimpio} ha quedado registrado(a).`);
       setNombre('');
       setBoleta('');
-      await cargar(); // Recargar los datos del taller para actualizar el cupo y la lista de inscritos
+      await cargar(); 
     } catch (err) {
       setErrorForm(err.message || 'Ocurrió un error al procesar la inscripción.');
     } finally {
       setEnviando(false);
     }
   }
-
 
   if (errorCarga) {
     return (
@@ -146,7 +150,6 @@ export default function DetalleTaller() {
         {errorForm && <p className="error">{errorForm}</p>}
         {exito && <p className={estilos.exito}>{exito}</p>}
       </section>
-
 
       <h2>Inscritos ({ocupados})</h2>
       {ocupados === 0 ? (

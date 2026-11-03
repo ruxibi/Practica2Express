@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { pedirJSON } from '../../lib/api';
+import Link from 'next/link';
 
 import TarjetaTaller from '../../components/TarjetaTaller';
 import estilos from '../../styles/Talleres.module.css';
@@ -62,6 +63,11 @@ export default function Talleres() {
           ))}
         </div>
       )}
+      <br />
+      <br />
+      <Link href="/talleres/registroTaller" style={{color: '#6b1d3a', textDecoration: 'none' }}>
+        Crear Taller
+      </Link>
     </main>
   );
 }

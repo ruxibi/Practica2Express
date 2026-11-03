@@ -4,6 +4,15 @@ const COLUMNAS_PUBLICAS = 'id, nombre, instructor, fecha, cupo';
 
 // Registrar alumno al taller
 async function registrarAlumno({ taller_id, nombre_alumno, boleta }) {
+    const [inscritoPrevio] = await pool.query(
+            `SELECT * FROM asistencias WHERE taller_id = ? AND boleta = ?`,
+            [taller_id, boleta]
+        );
+
+    if (inscritoPrevio.length > 0) {
+        return res.status(400).json({ error: 'Esta boleta ya se encuentra inscrita en este taller.' });
+    }
+
     const [info] = await pool.query(
         `INSERT INTO asistencias (taller_id, nombre_alumno, boleta)
          VALUES (?, ?, ?)`,

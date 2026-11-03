@@ -1,16 +1,10 @@
 import Link from 'next/link';
-import { useState} from 'react';
+import { useState } from 'react';
 import { pedirJSON } from '../lib/api';
 import { formatearFecha } from '../lib/formato';
 import { validarBoleta } from '../lib/validaciones';
 import estilos from '../styles/Talleres.module.css';
 
-
-
-
-// /perfil — el alumno escribe su boleta y ve sus datos, sus talleres y los talleres con lugar.
-// Todavía no hay login (llega en la semana 10): por eso se busca por boleta.
-// PASO 6: GET /api/usuarios, GET /api/talleres y GET /api/talleres/:id/asistencias (uno por taller).
 export default function Perfil() {
   const [boleta, setBoleta] = useState('');
   const [buscada, setBuscada] = useState('');
@@ -20,6 +14,7 @@ export default function Perfil() {
   const [disponibles, setDisponibles] = useState([]);
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
+  const [eliminando, seteliminando] = useState(false);
 
   async function buscar(e) {
     e.preventDefault();
@@ -32,8 +27,6 @@ export default function Perfil() {
     try {
       const usuarios = await pedirJSON('/usuarios');
       const talleres = await pedirJSON('/talleres');
-      // El backend no tiene una ruta "talleres de una boleta": se piden las asistencias de cada taller,//
-      // todas al mismo tiempo, y Promise.all espera a que lleguen todas (en el mismo orden que talleres).//
       const listas = await Promise.all(talleres.map((t) => pedirJSON(`/talleres/${t.id}/asistencias`)));
       const conAsistencias = talleres.map((t, i) => ({ ...t, asistencias: listas[i] }));
 
@@ -41,7 +34,6 @@ export default function Perfil() {
       const conLugar = conAsistencias.filter(
         (t) => !mios.includes(t) && t.asistencias.length < t.cupo
       );
-      // Alguien puede estar inscrito sin tener cuenta: en ese caso se usa el nombre de su inscripción.//
       const inscripcion = mios.length > 0 ? mios[0].asistencias.find((a) => a.boleta === b) : null;
 
       setAlumno(usuarios.find((u) => u.boleta === b) || null);
@@ -53,6 +45,36 @@ export default function Perfil() {
       setError(err.message);
     } finally {
       setCargando(false);
+    }
+  }
+
+  async function eliminarCuenta() {
+    if (!alumno) return;
+
+    const confirmar = window.confirm(
+      `¿Estás seguro de eliminar tu cuenta ${alumno.nombre}?, se eliminaran tambien las asistencias e inscripciones. Esta acción no se puede deshacer.`
+    );
+    if (!confirmar) return;
+
+    seteliminando(true);
+    setError('');
+
+    try {
+      
+      await pedirJSON(`/usuarios/${alumno.id}`, {
+        method: 'DELETE',
+      });
+
+      alert('Tu cuenta y sus asistencias han sido eliminadas correctamente.');
+      setAlumno(null);
+      setBuscada('');
+      setBoleta('');
+      setMisTalleres([]);
+      setDisponibles([]);
+    } catch (err) {
+      setError(err.message || 'Ocurrió un error al intentar eliminar la cuenta.');
+    } finally {
+      seteliminando(false);
     }
   }
 
@@ -76,17 +98,34 @@ export default function Perfil() {
                 <p><strong>Correo:</strong> {alumno.correo}</p>
                 <p><strong>Boleta:</strong> {alumno.boleta}</p>
                 <p><strong>Rol:</strong> {alumno.rol}</p>
+                
+                {/*BOTÓN DE ELIMINAR CUENTA */}
+                <div style={{ marginTop: '20px' }}>
+                  <button 
+                    onClick={eliminarCuenta} 
+                    disabled={eliminando}
+                    style={{
+                      color: 'Black', 
+                      border: 'none', 
+                      padding: '8px 12px', 
+                      borderRadius: '4px', 
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {eliminando ? 'Eliminando cuenta...' : 'Eliminar mi cuenta'}
+                  </button>
+                </div>
               </>
             ) : (
               <>
-              <p>
+                <p>
                   La boleta {buscada} no tiene cuenta registrada
                   {nombreInscrito ? ` (inscripciones a nombre de ${nombreInscrito})` : ''}. Aun así puedes
                   inscribirte en un taller. (Regístrate en el sistema para poder gestionar tus datos y talleres)
-              </p>
-              <Link href="/registroUsuario" style={{color: '#6b1d3a', textDecoration: 'none' }}>
+                </p>
+                <Link href="/registroUsuario" style={{color: '#6b1d3a', textDecoration: 'none' }}>
                   Registrarte aquí
-              </Link>
+                </Link>
               </>
             )}
           </section>
@@ -120,5 +159,4 @@ export default function Perfil() {
       )}
     </main>
   );
-
 }

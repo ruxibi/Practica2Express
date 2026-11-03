@@ -37,7 +37,17 @@ async function consultarAsistenciaPorTaller(req, res) {
     }
 }
 
+async function listarTodasLasAsistencias(req, res) {
+    try {
+        const asistencias = await asistenciaModel.obtenerTodasLasAsistencias();
+        res.json(asistencias);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 module.exports = {
     registrarAsistencia,
-    consultarAsistenciaPorTaller
+    consultarAsistenciaPorTaller,
+    listarTodasLasAsistencias
 };

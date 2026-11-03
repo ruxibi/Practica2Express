@@ -43,9 +43,17 @@ async function actualizar(id, {nombre, correo, rol}) {
 }
 
 //eliminar 
-async function eliminar(id) {
-    const [filas] = await pool.query(`DELETE FROM usuarios WHERE id = ?`, [id]);
-        return info.affectedRows > 0;
+async function eliminar(id) { 
+    const [usuarios] = await pool.query('SELECT boleta FROM usuarios WHERE id = ?', [id]);
+
+    if (usuarios.length > 0) {
+        const boletaUsuario = usuarios[0].boleta;
+        await pool.query('DELETE FROM asistencias WHERE boleta = ?', [boletaUsuario]);
+    }
+    
+    const [resultado] = await pool.query('DELETE FROM usuarios WHERE id = ?', [id]);
+    
+    return resultado.affectedRows > 0; 
 }
 
 //buscar por correo hash

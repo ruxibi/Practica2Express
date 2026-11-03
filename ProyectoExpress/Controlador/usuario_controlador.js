@@ -13,7 +13,7 @@ async function listarUsuarios(req, res) {
     try{
         const usuarios = await usuariosModel.listar();
         res.json(usuarios);
-    }catch{
+    }catch(error){
         res.status(500).json({error: error.message});
     }
 }
