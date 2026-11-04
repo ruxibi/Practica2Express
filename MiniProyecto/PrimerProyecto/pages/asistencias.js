@@ -2,17 +2,15 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { pedirJSON } from '../lib/api';
 import { ocultarBoleta } from '../lib/formato';
-import { validarBoleta, validarNombre } from '../lib/validaciones';
+import { validarBoleta } from '../lib/validaciones';
 import estilos from '../styles/Talleres.module.css';
 
 export default function PanelAsistencias() {
     const [asistencias, setAsistencias] = useState([]);
     const [talleres, setTalleres] = useState([]);
-    const [usuarios, setUsuarios] = useState([]);
  
-    // Estados para el formulario de registro directo
+    // Estados para el formulario de pase de lista / asistencia
     const [tallerSeleccionado, setTallerSeleccionado] = useState('');
-    const [nombreAlumno, setNombreAlumno] = useState('');
     const [boletaAlumno, setBoletaAlumno] = useState('');
     const [errorForm, setErrorForm] = useState('');
     const [exitoForm, setExitoForm] = useState('');
@@ -29,12 +27,9 @@ export default function PanelAsistencias() {
 
   async function cargarDatos() {
     try {
-      // Usamos /asistencias porque pedirJSON ya añade /api automáticamente
       const dataAsistencias = await pedirJSON('/asistencias');
       const dataTalleres = await pedirJSON('/talleres');
-      const usuariosData = await pedirJSON('/usuarios'); 
       
-      setUsuarios(usuariosData);
       setAsistencias(dataAsistencias);
       setTalleres(dataTalleres);
       setErrorCarga('');
@@ -43,56 +38,18 @@ export default function PanelAsistencias() {
     }
   }
 
-  async function registrarAsistenciaDirecta(e) {
+  async function marcarAsistencia(e) {
     e.preventDefault();
     setErrorForm('');
     setExitoForm('');
 
-    const nombreLimpio = nombreAlumno.trim();
     const boletaLimpia = boletaAlumno.trim();
 
     if (!tallerSeleccionado) {
-      return setErrorForm('Selecciona un taller para la inscripción.');
-    }
-    if (!validarNombre(nombreLimpio)) {
-      return setErrorForm('Ingresa un nombre válido (solo letras, mínimo 3 caracteres).');
+      return setErrorForm('Selecciona un taller.');
     }
     if (!validarBoleta(boletaLimpia)) {
       return setErrorForm('La boleta debe tener exactamente 10 dígitos.');
-    }
-
-    // Validación de usuario registrado vs nombre
-    const usuarioEncontrado = usuarios.find((u) => u.boleta === boletaLimpia);
-    if (usuarioEncontrado) {
-      if (usuarioEncontrado.nombre.trim().toLowerCase() !== nombreLimpio.toLowerCase()) {
-        return setErrorForm('La boleta pertenece a un usuario registrado, pero el nombre no coincide.');
-      }
-    }
-
-    // Validar si ya está inscrito en ese taller
-    const yaInscrito = asistencias.some(
-      (a) => String(a.taller_id) === String(tallerSeleccionado) && a.boleta === boletaLimpia
-    );
-    if (yaInscrito) {
-      return setErrorForm('Esta boleta ya se encuentra inscrita en este taller.');
-    }
-
-    // Validar cupo y fecha del taller seleccionado
-    const tallerObj = talleres.find((t) => String(t.id) === String(tallerSeleccionado));
-    if (tallerObj) {
-      const ocupadosTaller = asistencias.filter((a) => String(a.taller_id) === String(tallerSeleccionado)).length;
-      const libresTaller = Math.max(0, tallerObj.cupo - ocupadosTaller);
-      
-      if (libresTaller === 0) {
-        return setErrorForm('El taller ya alcanzó su cupo máximo.');
-      }
-
-      const hoyStr = new Date().toISOString().split('T')[0];
-      const fechaTallerStr = tallerObj.fecha.split('T')[0];
-
-      if (fechaTallerStr < hoyStr) {
-        return setErrorForm('No es posible inscribirse a un taller de una fecha que ya pasó.');
-      }
     }
 
     setEnviando(true);
@@ -102,24 +59,24 @@ export default function PanelAsistencias() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           taller_id: tallerSeleccionado,
-          nombre_alumno: nombreLimpio,
           boleta: boletaLimpia,
         }),
       });
 
-      setExitoForm('¡Inscripción registrada con éxito!');
-      setNombreAlumno('');
+      setExitoForm('¡Asistencia registrada correctamente!');
       setBoletaAlumno('');
       setTallerSeleccionado('');
       await cargarDatos(); 
     } catch (err) {
-      setErrorForm(err.message || 'Ocurrió un error al registrar.');
+      setErrorForm(err.message || 'Ocurrió un error al registrar la asistencia.');
     } finally {
       setEnviando(false);
     }
   }
 
+  // Filtramos para que SOLO aparezcan los que tienen asistio en true
   const asistenciasFiltradas = asistencias.filter((a) => {
+    if (!a.asistio) return false; // Si no ha asistido, no se muestra aquí
     const coincideTaller = filtroTaller === '' || String(a.taller_id) === String(filtroTaller);
     const coincideBusqueda = 
       a.nombre_alumno.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -129,7 +86,7 @@ export default function PanelAsistencias() {
 
   return (
     <main>
-      <h1>Asistencias Generales</h1>
+      <h1>Control de Asistencias</h1>
 
       {errorCarga && <p className="error">{errorCarga}</p>}
 
@@ -191,14 +148,14 @@ export default function PanelAsistencias() {
 
       <br /><br />
 
-      {/* Formulario de Nueva Inscripción Directa */}
+      {/* Formulario para Pasar Lista / Marcar Asistencia */}
       <div className="form-container" style={{ maxWidth: '600px' }}>
-        <h2>Registrar Asistencia</h2>
+        <h2>Registrar Asistencia (Pase de Lista)</h2>
 
-        {errorForm && <p className="alert-error">{errorForm}</p>}
-        {exitoForm && <p className="alert-exito">{exitoForm}</p>}
+        {errorForm && <p className="alert-error" style={{ color: 'red' }}>{errorForm}</p>}
+        {exitoForm && <p className="alert-exito" style={{ color: 'green' }}>{exitoForm}</p>}
 
-        <form onSubmit={registrarAsistenciaDirecta}>
+        <form onSubmit={marcarAsistencia}>
           <div className="form-group">
             <label>Seleccionar Taller:</label>
             <select 
@@ -214,27 +171,17 @@ export default function PanelAsistencias() {
           </div>
 
           <div className="form-group">
-            <label>Nombre del alumno:</label>
-            <input 
-              type="text" 
-              placeholder="Nombre completo" 
-              value={nombreAlumno}
-              onChange={(e) => setNombreAlumno(e.target.value)}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Boleta (10 dígitos):</label>
+            <label>Boleta del alumno (10 dígitos):</label>
             <input 
               type="text" 
               placeholder="Boleta" 
-              value= {boletaAlumno}
+              value={boletaAlumno}
               onChange={(e) => setBoletaAlumno(e.target.value)}
             />
           </div>
 
           <button type="submit" disabled={enviando} className="form-button">
-            {enviando ? 'Registrando...' : 'Registrar'}
+            {enviando ? 'Registrando...' : 'Marcar Asistencia'}
           </button>
         </form>
       </div>

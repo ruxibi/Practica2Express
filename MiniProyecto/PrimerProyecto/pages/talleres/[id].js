@@ -12,7 +12,7 @@ export default function DetalleTaller() {
 
   const [taller, setTaller] = useState(null);
   const [asistencias, setAsistencias] = useState([]);
-  const [usuarios, setUsuarios] = useState([]); 
+  const [usuarios, setUsuarios] = useState([]);
   const [errorCarga, setErrorCarga] = useState('');
 
   const [nombre, setNombre] = useState('');
@@ -33,7 +33,7 @@ export default function DetalleTaller() {
     try {
       setTaller(await pedirJSON(`/talleres/${id}`));
       setAsistencias(await pedirJSON(`/talleres/${id}/asistencias`));
-      setUsuarios(await pedirJSON('/usuarios')); 
+      setUsuarios(await pedirJSON('/usuarios'));
       setErrorCarga('');
     } catch (error) {
       setErrorCarga(error.message);
@@ -84,20 +84,20 @@ export default function DetalleTaller() {
 
     setEnviando(true);
     try {
-      await pedirJSON('/asistencias', {
+      await pedirJSON(`/talleres/${id}/inscribir`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          taller_id: id,
           nombre_alumno: nombreLimpio,
           boleta: boletaLimpia,
         }),
       });
 
       setExito(`¡Inscripción exitosa! ${nombreLimpio} ha quedado registrado(a).`);
+      // ... rest of the code
       setNombre('');
       setBoleta('');
-      await cargar(); 
+      await cargar();
     } catch (err) {
       setErrorForm(err.message || 'Ocurrió un error al procesar la inscripción.');
     } finally {
