@@ -37,6 +37,7 @@ app.get('/api/usuarios/:id', usuarioControlador.obtenerUsuario);
 app.post('/api/usuarios', usuarioControlador.crearUsuario);
 app.put('/api/usuarios/:id', usuarioControlador.actualizarUsuario);
 app.delete('/api/usuarios/:id', usuarioControlador.eliminarUsuario);
+app.post('/api/talleres/:id/inscribir', tallerControlador.registrarAlumno);
 
 app.get('/', (req, res) => {
     res.json({ mensaje: 'API de Registro de Asistencia - CECyT 9 funcionando correctamente' });

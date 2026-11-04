@@ -88,9 +88,10 @@ export default function DetalleTaller() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          taller_id: id,
           nombre_alumno: nombreLimpio,
-          boleta: boletaLimpia,
-        }),
+          boleta: boletaLimpia
+        })
       });
 
       setExito(`¡Inscripción exitosa! ${nombreLimpio} ha quedado registrado(a).`);
