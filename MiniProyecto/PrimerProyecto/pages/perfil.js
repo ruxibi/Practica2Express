@@ -71,6 +71,7 @@ export default function Perfil() {
         body: JSON.stringify({
           taller_id: tallerId,
           boleta: buscada,
+          nombre_alumno: alumno.nombre,
         }),
       });
       alert('¡Asistencia registrada con éxito!');
@@ -224,6 +225,7 @@ export default function Perfil() {
               </>
             )}
           </section>
+          
 
           <h2>Mis talleres ({misTalleres.length})</h2>
           {misTalleres.length === 0 ? (
