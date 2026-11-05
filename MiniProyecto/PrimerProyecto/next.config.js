@@ -1,5 +1,5 @@
-const MINI_SERVIDOR_URL = 'http://192.168.21.30:3000';
-const BACKEND_URL = 'http://192.168.21.30:4000';
+const MINI_SERVIDOR_URL = 'http://192.168.20.40:3000';
+const BACKEND_URL = 'http://192.168.20.40:4000';
 
 /** @type{import('next').NextConfig} */
 

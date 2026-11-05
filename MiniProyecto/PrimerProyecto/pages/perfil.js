@@ -75,7 +75,7 @@ export default function Perfil() {
         }),
       });
       alert('¡Asistencia registrada con éxito!');
-      // Recargamos la información del perfil para actualizar el estado
+      
       buscar({ preventDefault: () => {} });
     } catch (err) {
       alert(err.message || 'Error al registrar la asistencia.');
